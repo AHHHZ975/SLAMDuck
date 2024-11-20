@@ -2,7 +2,6 @@
 ## Goal
 
 - To explore the recursive Extended Kalman Filter (EKF) SLAM algorithm.
-
 - This project involves hands-on robotics experience using a Duckiebot and a Duckietown.
 
 ## Hardware
