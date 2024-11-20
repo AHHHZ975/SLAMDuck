@@ -2,29 +2,32 @@ import numpy as np
 from scipy.interpolate import interp1d
 import pylab as plt
 
+# The address to the text files were generated after reading the recorded bag file
 wheel_file_path = '/home/asha/SLAMDuck/data_dec_17/velocity_luthor_2019-12-17-23-32-14/luthor_2019-12-17-23-32-14.txt'
 image_file_path = '/home/asha/SLAMDuck/data_dec_17/velocity_luthor_2019-12-17-23-32-14/luthor_2019-12-17-23-32-14_image_time.txt'
 
+# An output path to store the velocity and the corresponding timesteps, I think
 out_path = '/home/asha/SLAMDuck/data_dec_17/velocity_time_luthor_2019-12-17-23-32-14/luthor_2019-12-17-23-32-14_'
 
-
+# Load the data from the text files. They are Numpy values
 wheel_data = np.loadtxt(wheel_file_path)
 image_time = np.loadtxt(image_file_path)
 
+# Decoding the data into left and right wheels' velocities
 l_vel = wheel_data[:,0]
 r_vel = wheel_data[:,1]
 wheel_time = wheel_data[:,2]
 
-#convert to seconds
+# Convert the timesteps to seconds
 image_time = image_time/1e9
 wheel_time = wheel_time/1e9
 
-#median time between images
+# Median time between images
 median_image_time = np.median(np.diff(image_time))
 
 
 
-#find large gaps in the image_time and fill them with wheel time
+# Find large gaps in the image_time and fill them with wheel time
 gapless_image_time = []
 has_image = []
 thresh = 0.2
