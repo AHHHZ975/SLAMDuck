@@ -2,25 +2,26 @@ import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 import seaborn as sns
-velocities = np.loadtxt("/home/asha/SLAMDuck/data_dec_02/velocity_time_luthor_2019-12-02-18-53-07\
-/interpolated_wheel_velocities.txt")
-time = np.loadtxt("/home/asha/SLAMDuck/data_dec_02/velocity_time_luthor_2019-12-02-18-53-07\
-/interpolated_time.txt")
-T = 0.034
+
+# Loading the left and right wheels velocities from the generated text file by the "my_node.py" file.
+velocities = np.loadtxt("/home/asha/SLAMDuck/data_dec_02/velocity_time_luthor_2019-12-02-18-53-07/interpolated_wheel_velocities.txt")
+time = np.loadtxt("/home/asha/SLAMDuck/data_dec_02/velocity_time_luthor_2019-12-02-18-53-07/interpolated_time.txt")
 range_bearing_dir = "/home/asha/SLAMDuck/data_dec_02/range_bearing_luthor_2019-12-02-18-53-07/"
 
-# note that we will call the the estimates from the prediction step as x_check and P_check
+T = 0.034
+
+# Note that we will call the the estimates from the prediction step as x_check and P_check
 # whereas the corrected pose shall be called as x_hat and P_hat
 
-# initial conditions
-#we have 8 landmarks, pose <m_x,m_y>
-#state vector is 3 + 8*2, where 3 for the robot's pose and 8*2 for x and y coordinates of landmark
-x_0_hat = np.zeros((3+8*2,1))
-init_landmark_cov =[10**10]*8*2
-P_0_hat = np.diag([0,0,0]+init_landmark_cov)
-#the initial cov for the landmarks is inf because we have no idea where they are
+# Initial conditions
+# We have 8 landmarks, pose <m_x,m_y>
+# State vector is 3 + 8*2, where 3 for the robot's pose and 8*2 for x and y coordinates of landmark multiplied by the number of landmarks which is 8
 
-#wrap angles to pi
+x_0_hat = np.zeros((3+8*2,1))
+init_landmark_cov =[10**10]*8*2 # The initial cov for the landmarks is inf because we have no idea where they are
+P_0_hat = np.diag([0,0,0]+init_landmark_cov)
+
+# Wrap angles to the range of [-pi, pi]
 def wraptopi(theta):
     if theta > np.pi :
         theta = theta  - 2*np.pi
@@ -31,16 +32,22 @@ def wraptopi(theta):
 
     return theta
 
+# Sorting the eigenvalues of the covariance matrix
 def eigsorted(cov):
     vals, vecs = np.linalg.eigh(cov)
     order = vals.argsort()[::-1]
     return vals[order], vecs[:,order]
 
 
+
 eigen_vals =[]
+
+# I guess each ellipsoid (representing the area in which the apriltags exist)
+# will be represented by three parameters.
 ellipse_width =[]
 ellipse_height =[]
 ellipse_angle =[]
+
 nstd = 3
 ax = plt.subplot()
 cov = P_0_hat[0:2, 0:2]
@@ -62,8 +69,9 @@ b_var = 0.1
 w_k = np.diag([v_var,om_var])
 n_k = np.diag([r_var,b_var])
 
-l = 0.1 #length from one wheel to the other
-#we will store our values here
+l = 0.1 # The distance between two wheels on the robot
+
+# We will store our values here
 X_estimated  = [x_0_hat]
 P_estimated = [P_0_hat]
 size = 3+8*2
@@ -140,13 +148,13 @@ print(previously_observed_landmarks)
         measurement_range = r[i][j]
         measurement_bearing = wraptopi(b[i][j])
 
-                if len(G_k) == 0:  # no landmarks yet
-                    G_k = np.array([[-beta / alpha, -gamma / alpha,
-                                     (beta * d * sin(th_check_k) - gamma * d * cos(th_check_k)) / alpha], \
-                                    [gamma / alpha ** 2, -beta / alpha ** 2,
-                                     (-d * sin(th_check_k) * gamma - d * cos(th_check_k) * beta) / alpha ** 2 - 1]])
-                    g_k = np.array([[range_landmark], [bearing_landmark]])
-                    measurements = np.array([[measurement_range], [measurement_bearing]])
+        if len(G_k) == 0:  # no landmarks yet
+            G_k = np.array([[-beta / alpha, -gamma / alpha,
+                                (beta * d * sin(th_check_k) - gamma * d * cos(th_check_k)) / alpha], \
+                            [gamma / alpha ** 2, -beta / alpha ** 2,
+                                (-d * sin(th_check_k) * gamma - d * cos(th_check_k) * beta) / alpha ** 2 - 1]])
+            g_k = np.array([[range_landmark], [bearing_landmark]])
+            measurements = np.array([[measurement_range], [measurement_bearing]])
 
 
 
@@ -209,5 +217,3 @@ for i in range(0,len(ellipse_height),50):
     plt.xlim((-3,1))
     plt.show()
     #plt.close('all')
-
-'''

@@ -32,23 +32,19 @@ gapless_image_time = []
 has_image = []
 thresh = 0.2
 for i in range(len(image_time)-1):
-    #add the image time, which we know has an associated image
+    # Add the image time, which we know has an associated image
     gapless_image_time.append(image_time[i])
     has_image.append(True)
 
-    #check if there's a gap between this image time point and the
-    #next image time point. If this is too big (>thresh), then we
-    #will fill it with times from the wheel velocity data
-    if image_time[i+1]-image_time[i]>thresh:
-        wheel_time_to_add = np.arange(image_time[i],image_time[i+1],median_image_time)
-        has_image += [False]*len(wheel_time_to_add)
+    # Check if there's a gap between this image timestamp and the
+    # next image timestamp. If this is too big (>thresh), then we
+    # will fill it with times from the wheel velocity data
+    if (image_time[i+1] - image_time[i]) > thresh:
+        wheel_time_to_add = np.arange(image_time[i], image_time[i+1], median_image_time)
+        has_image += [False] * len(wheel_time_to_add)
         gapless_image_time += wheel_time_to_add.tolist()
-        # wheel_time_indices = np.logical_and(wheel_time>image_time[i],wheel_time<image_time[i+1])
-        # wheel_time_to_add = wheel_time[wheel_time_indices]
-        # has_image += [False]*len(wheel_time_to_add)
-        # gapless_image_time += wheel_time_to_add.tolist()
 
-gapless_image_time=np.array(gapless_image_time)
+gapless_image_time = np.array(gapless_image_time)
 has_image = np.array(has_image)
 
 plt.figure()
@@ -64,7 +60,7 @@ plt.legend()
 plt.show()
 
 
-#interpolation functions
+# Interpolation functions
 l_interp_func = interp1d(x=wheel_time,y=l_vel,kind='linear',bounds_error=False,fill_value=0)
 r_interp_func = interp1d(x=wheel_time,y=r_vel,kind='linear',bounds_error=False,fill_value=0)
 
